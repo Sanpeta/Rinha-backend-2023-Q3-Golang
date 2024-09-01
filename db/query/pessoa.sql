@@ -8,10 +8,10 @@ SELECT * FROM pessoas WHERE id = $1;
 
 -- name: GetPessoas :many
 SELECT * FROM pessoas 
-WHERE apelido LIKE '%' || $1 || '%'
-OR nome LIKE '%' || $1 || '%'
-OR stack @> ARRAY[$1]
+WHERE apelido LIKE '%' || @t || '%'
+OR nome LIKE '%' || @t || '%'
+OR stack @> ARRAY[@t]
 LIMIT 50;
 
--- name: CountPessoa :one
+-- name: CountPessoas :one
 SELECT COUNT(DISTINCT id) FROM pessoas;

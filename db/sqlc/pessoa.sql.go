@@ -13,12 +13,12 @@ import (
 	"github.com/lib/pq"
 )
 
-const countPessoa = `-- name: CountPessoa :one
+const countPessoas = `-- name: CountPessoas :one
 SELECT COUNT(DISTINCT id) FROM pessoas
 `
 
-func (q *Queries) CountPessoa(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countPessoa)
+func (q *Queries) CountPessoas(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countPessoas)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -80,8 +80,8 @@ OR stack @> ARRAY[$1]
 LIMIT 50
 `
 
-func (q *Queries) GetPessoas(ctx context.Context, dollar_1 sql.NullString) ([]Pessoa, error) {
-	rows, err := q.db.QueryContext(ctx, getPessoas, dollar_1)
+func (q *Queries) GetPessoas(ctx context.Context, t sql.NullString) ([]Pessoa, error) {
+	rows, err := q.db.QueryContext(ctx, getPessoas, t)
 	if err != nil {
 		return nil, err
 	}
