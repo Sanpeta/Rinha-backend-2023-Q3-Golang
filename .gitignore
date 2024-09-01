@@ -20,14 +20,10 @@
 # Go workspace file
 go.work
 go.work.sum
-SQL.png
 
 app.env
 *.http
 .air.toml
 /tmp
-
-EXEMPLO CHECKOUT SESSION COMPLETED.json
-EXEMPLO PAYMENT INTENT SUCCEEDED.json
 
 dbml-error.log
