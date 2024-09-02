@@ -20,11 +20,11 @@ type createPessoaRequest struct {
 }
 
 type createPessoaResponse struct {
-	ID        uuid.UUID `json:"id"`
-	Name      string    `json:"nome"`
-	Nickname  string    `json:"apelido"`
-	Birthdate string    `json:"nascimento"`
-	Stack     []string  `json:"stack"`
+	ID        string   `json:"id"`
+	Name      string   `json:"nome"`
+	Nickname  string   `json:"apelido"`
+	Birthdate string   `json:"nascimento"`
+	Stack     []string `json:"stack"`
 }
 
 func (server *Server) createPessoa(context *gin.Context) {
@@ -60,14 +60,14 @@ func (server *Server) createPessoa(context *gin.Context) {
 	}
 
 	response := createPessoaResponse{
-		ID:        pessoa.ID,
+		ID:        pessoa.ID.String(),
 		Name:      pessoa.Nome,
 		Nickname:  pessoa.Apelido,
 		Birthdate: pessoa.Nascimento,
 		Stack:     pessoa.Stack,
 	}
 
-	context.Header("Location", fmt.Sprintf("/pessoa/%s", response.ID.String()))
+	context.Header("Location", fmt.Sprintf("/pessoa/%s", response.ID))
 
 	context.JSON(http.StatusCreated, response)
 }
