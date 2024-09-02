@@ -27,3 +27,7 @@ app.env
 /tmp
 
 dbml-error.log
+RinhaBackendSimulation.scala
+pessoas-payloads.tsv
+termos-busca.tsv
+run-test.sh
