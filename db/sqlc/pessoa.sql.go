@@ -76,7 +76,7 @@ const getPessoas = `-- name: GetPessoas :many
 SELECT id, apelido, nome, nascimento, stack FROM pessoas 
 WHERE apelido LIKE '%' || $1 || '%'
 OR nome LIKE '%' || $1 || '%'
-OR stack @> ARRAY[$1]
+OR stack @> ARRAY[$1]::VARCHAR[]
 LIMIT 50
 `
 

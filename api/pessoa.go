@@ -99,10 +99,6 @@ type listPessoasRequest struct {
 	Term string `form:"t" binding:"required"`
 }
 
-type listPessoasResponse struct {
-	Pessoas []getPessoaResponse `json:"pessoas"`
-}
-
 func (server *Server) listPessoas(context *gin.Context) {
 	var request listPessoasRequest
 	err := context.ShouldBindQuery(&request)
@@ -117,18 +113,7 @@ func (server *Server) listPessoas(context *gin.Context) {
 		return
 	}
 
-	var response listPessoasResponse
-	for _, pessoa := range pessoas {
-		response.Pessoas = append(response.Pessoas, getPessoaResponse{
-			ID:        pessoa.ID,
-			Name:      pessoa.Nome,
-			Nickname:  pessoa.Apelido,
-			Birthdate: pessoa.Nascimento,
-			Stack:     pessoa.Stack,
-		})
-	}
-
-	context.JSON(http.StatusOK, response)
+	context.JSON(http.StatusOK, pessoas)
 }
 
 func (server *Server) contagemPessoas(context *gin.Context) {

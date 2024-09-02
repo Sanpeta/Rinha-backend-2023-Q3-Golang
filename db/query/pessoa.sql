@@ -10,7 +10,7 @@ SELECT * FROM pessoas WHERE id = $1;
 SELECT * FROM pessoas 
 WHERE apelido LIKE '%' || @t || '%'
 OR nome LIKE '%' || @t || '%'
-OR stack @> ARRAY[@t]
+OR stack @> ARRAY[@t]::VARCHAR[]
 LIMIT 50;
 
 -- name: CountPessoas :one
