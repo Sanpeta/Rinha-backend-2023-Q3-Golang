@@ -51,6 +51,8 @@ func (server *Server) createPessoa(context *gin.Context) {
 		Stack:     pessoa.Stack,
 	}
 
+	context.Header("Location", fmt.Sprintf("/pessoa/%s", response.ID.String()))
+
 	context.JSON(http.StatusCreated, response)
 }
 
