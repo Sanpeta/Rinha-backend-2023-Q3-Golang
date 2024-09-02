@@ -21,7 +21,7 @@ type createPessoaRequest struct {
 func (server *Server) createPessoa(context *gin.Context) {
 	var request createPessoaRequest
 	if err := context.ShouldBindJSON(&request); err != nil {
-		context.JSON(http.StatusBadRequest, errorResponse(err))
+		context.JSON(http.StatusUnprocessableEntity, gin.H{})
 		return
 	}
 
@@ -38,7 +38,7 @@ func (server *Server) createPessoa(context *gin.Context) {
 		Stack:      request.Stack,
 	})
 	if err != nil {
-		context.JSON(http.StatusUnprocessableEntity, errorResponse(err))
+		context.JSON(http.StatusUnprocessableEntity, gin.H{})
 		return
 	}
 
@@ -48,7 +48,7 @@ func (server *Server) createPessoa(context *gin.Context) {
 }
 
 type getPessoaRequest struct {
-	ID uuid.UUID `uri:"id" binding:"required"`
+	ID string `uri:"id" binding:"required"`
 }
 
 type getPessoaResponse struct {
@@ -63,17 +63,23 @@ func (server *Server) getPessoa(context *gin.Context) {
 	var request getPessoaRequest
 	err := context.ShouldBindUri(&request)
 	if err != nil {
-		context.JSON(http.StatusBadRequest, errorResponse(err))
+		context.JSON(http.StatusBadRequest, gin.H{})
 		return
 	}
 
-	pessoa, err := server.store.GetPessoa(context, request.ID)
+	uuid, err := uuid.Parse(request.ID)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{})
+		return
+	}
+
+	pessoa, err := server.store.GetPessoa(context, uuid)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			context.JSON(http.StatusNotFound, errorResponse(err))
+			context.JSON(http.StatusNotFound, gin.H{})
 			return
 		}
-		context.JSON(http.StatusInternalServerError, errorResponse(err))
+		context.JSON(http.StatusNotFound, gin.H{})
 		return
 	}
 
@@ -96,13 +102,13 @@ func (server *Server) listPessoas(context *gin.Context) {
 	var request listPessoasRequest
 	err := context.ShouldBindQuery(&request)
 	if err != nil {
-		context.JSON(http.StatusBadRequest, errorResponse(err))
+		context.JSON(http.StatusBadRequest, gin.H{})
 		return
 	}
 
 	pessoas, err := server.store.GetPessoas(context, sql.NullString{String: request.Term, Valid: true})
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, errorResponse(err))
+		context.JSON(http.StatusInternalServerError, gin.H{})
 		return
 	}
 
@@ -112,7 +118,7 @@ func (server *Server) listPessoas(context *gin.Context) {
 func (server *Server) contagemPessoas(context *gin.Context) {
 	count, err := server.store.CountPessoas(context)
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, errorResponse(err))
+		context.JSON(http.StatusInternalServerError, gin.H{})
 		return
 	}
 
