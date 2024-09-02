@@ -8,30 +8,22 @@ services:
       - POSTGRES_DB=rinha_backend_2023
     networks:
       - app-network
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
     deploy:
       resources:
         limits:
           cpus: "0.75"
           memory: "1.5GB"
 
-  api-1:
-    hostname: api-1
+  api1: # API - Instância 01
+    hostname: api1
     build:
       context: .
       dockerfile: Dockerfile
-    # ports:
-    #   - "3000:3000"
-    expose:
-      - "80"
     environment:
       - DB_SOURCE=postgresql://postgres:postgres@postgres:5432/rinha_backend_2023?sslmode=disable
-      # - CACHE_URL=redis:6379
     depends_on:
       - postgres
-      # - redis
-    entrypoint: ["postgres:5432"]
+    entrypoint: ["/app/wait-for.sh", "postgres:5432", "--", "/app/start.sh"]
     command: ["/app/main"]
     networks:
       - app-network
@@ -39,24 +31,18 @@ services:
       resources:
         limits:
           cpus: "0.25"
-          memory: "0.50GB"
+          memory: "0.5GB"
 
-  api-2:
-    hostname: api-2
+  api2: # API - Instância 02
+    hostname: api2
     build:
       context: .
       dockerfile: Dockerfile
-    # ports:
-    #   - "3001:3000"
-    expose:
-      - "80"
     environment:
       - DB_SOURCE=postgresql://postgres:postgres@postgres:5432/rinha_backend_2023?sslmode=disable
-      # - CACHE_URL=redis:6379
     depends_on:
       - postgres
-      # - redis
-    entrypoint: ["postgres:5432"]
+    entrypoint: ["/app/wait-for.sh", "postgres:5432", "--", "/app/start.sh"]
     command: ["/app/main"]
     networks:
       - app-network
@@ -64,40 +50,25 @@ services:
       resources:
         limits:
           cpus: "0.25"
-          memory: "0.50GB"
+          memory: "0.5GB"
 
-  nginx:
+  nginx: # Load Balancer
     image: nginx:latest
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
-      - api-1
-      - api-2
+      - api1
+      - api2
     ports:
-      - "9999:9999"
+      - "9999:9999" # Nginx expõe a porta 9999
     networks:
       - app-network
     deploy:
       resources:
         limits:
           cpus: "0.25"
-          memory: "0.50GB"
-
-  # redis:
-  #   image: redis:latest
-  #   container_name: redis_compose_pillbox
-  #   command: redis-server --save "" --appendonly no
-  #   networks:
-  #     - app-network
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         cpus: "0.10"
-  #         memory: "0.50GB"
+          memory: "0.5GB"
 
 networks:
   app-network:
     driver: bridge
-
-volumes:
-  postgres-data:
