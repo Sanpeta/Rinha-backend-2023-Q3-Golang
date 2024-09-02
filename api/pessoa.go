@@ -12,10 +12,10 @@ import (
 )
 
 type createPessoaRequest struct {
-	Name      string   `json:"nome" binding:"required"`
-	Nickname  string   `json:"apelido" binding:"required"`
-	Birthdate string   `json:"nascimento" binding:"required"`
-	Stack     []string `json:"stack" binding:"omitempty"`
+	Name      string   `json:"nome" binding:"required,max=32"`
+	Nickname  string   `json:"apelido" binding:"required,max=100"`
+	Birthdate string   `json:"nascimento" binding:"required,min=10,max=10"`
+	Stack     []string `json:"stack" binding:"omitempty,dive,max=32"`
 }
 
 func (server *Server) createPessoa(context *gin.Context) {
@@ -43,7 +43,6 @@ func (server *Server) createPessoa(context *gin.Context) {
 	}
 
 	context.Header("Location", fmt.Sprintf("/pessoas/%s", pessoa.ID))
-
 	context.JSON(http.StatusCreated, gin.H{})
 }
 
