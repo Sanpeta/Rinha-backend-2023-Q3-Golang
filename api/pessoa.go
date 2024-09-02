@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
-	"time"
 
 	db "github.com/Sanpeta/rinha-backend-2023-q3-golang/db/sqlc"
 	"github.com/gin-gonic/gin"
@@ -19,14 +18,6 @@ type createPessoaRequest struct {
 	Stack     []string `json:"stack" binding:"omitempty"`
 }
 
-type createPessoaResponse struct {
-	ID        string   `json:"id"`
-	Name      string   `json:"nome"`
-	Nickname  string   `json:"apelido"`
-	Birthdate string   `json:"nascimento"`
-	Stack     []string `json:"stack"`
-}
-
 func (server *Server) createPessoa(context *gin.Context) {
 	var request createPessoaRequest
 	if err := context.ShouldBindJSON(&request); err != nil {
@@ -34,16 +25,8 @@ func (server *Server) createPessoa(context *gin.Context) {
 		return
 	}
 
-	// Verifique se a data está no formato AAAA-MM-DD usando regex
 	re := regexp.MustCompile(`^\d{4}-\d{2}-\d{2}$`)
 	if !re.MatchString(request.Birthdate) {
-		context.JSON(http.StatusBadRequest, errorResponse(fmt.Errorf("data de nascimento inválida")))
-		return
-	}
-
-	// Verifique se a data é válida
-	_, err := time.Parse("2006-01-02", request.Birthdate)
-	if err != nil {
 		context.JSON(http.StatusBadRequest, errorResponse(fmt.Errorf("data de nascimento inválida")))
 		return
 	}
@@ -59,17 +42,9 @@ func (server *Server) createPessoa(context *gin.Context) {
 		return
 	}
 
-	response := createPessoaResponse{
-		ID:        pessoa.ID.String(),
-		Name:      pessoa.Nome,
-		Nickname:  pessoa.Apelido,
-		Birthdate: pessoa.Nascimento,
-		Stack:     pessoa.Stack,
-	}
+	context.Header("Location", fmt.Sprintf("/pessoas/%s", pessoa.ID))
 
-	context.Header("Location", fmt.Sprintf("/pessoa/%s", response.ID))
-
-	context.JSON(http.StatusCreated, response)
+	context.JSON(http.StatusCreated, gin.H{})
 }
 
 type getPessoaRequest struct {
