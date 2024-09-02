@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"regexp"
+	"time"
 
 	db "github.com/Sanpeta/rinha-backend-2023-q3-golang/db/sqlc"
 	"github.com/gin-gonic/gin"
@@ -29,6 +31,20 @@ func (server *Server) createPessoa(context *gin.Context) {
 	var request createPessoaRequest
 	if err := context.ShouldBindJSON(&request); err != nil {
 		context.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	// Verifique se a data está no formato AAAA-MM-DD usando regex
+	re := regexp.MustCompile(`^\d{4}-\d{2}-\d{2}$`)
+	if !re.MatchString(request.Birthdate) {
+		context.JSON(http.StatusBadRequest, errorResponse(fmt.Errorf("data de nascimento inválida")))
+		return
+	}
+
+	// Verifique se a data é válida
+	_, err := time.Parse("2006-01-02", request.Birthdate)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, errorResponse(fmt.Errorf("data de nascimento inválida")))
 		return
 	}
 
