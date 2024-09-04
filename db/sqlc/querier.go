@@ -13,9 +13,9 @@ import (
 
 type Querier interface {
 	CountPessoas(ctx context.Context) (int64, error)
-	CreatePessoa(ctx context.Context, arg CreatePessoaParams) (Pessoa, error)
+	CreatePessoa(ctx context.Context, arg CreatePessoaParams) (uuid.UUID, error)
 	GetPessoa(ctx context.Context, id uuid.UUID) (Pessoa, error)
-	GetPessoas(ctx context.Context, t sql.NullString) ([]Pessoa, error)
+	GetPessoas(ctx context.Context, dollar_1 sql.NullString) ([]Pessoa, error)
 }
 
 var _ Querier = (*Queries)(nil)

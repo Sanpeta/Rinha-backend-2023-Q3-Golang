@@ -25,38 +25,36 @@ func (q *Queries) CountPessoas(ctx context.Context) (int64, error) {
 }
 
 const createPessoa = `-- name: CreatePessoa :one
-INSERT INTO pessoas (apelido, nome, nascimento, stack)
-VALUES ($1, $2, $3, $4)
-RETURNING id, apelido, nome, nascimento, stack
+INSERT INTO pessoas (id, apelido, nome, nascimento, stack, search_index)
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING id
 `
 
 type CreatePessoaParams struct {
-	Apelido    string   `json:"apelido"`
-	Nome       string   `json:"nome"`
-	Nascimento string   `json:"nascimento"`
-	Stack      []string `json:"stack"`
+	ID          uuid.UUID `json:"id"`
+	Apelido     string    `json:"apelido"`
+	Nome        string    `json:"nome"`
+	Nascimento  string    `json:"nascimento"`
+	Stack       []string  `json:"stack"`
+	SearchIndex string    `json:"search_index"`
 }
 
-func (q *Queries) CreatePessoa(ctx context.Context, arg CreatePessoaParams) (Pessoa, error) {
+func (q *Queries) CreatePessoa(ctx context.Context, arg CreatePessoaParams) (uuid.UUID, error) {
 	row := q.db.QueryRowContext(ctx, createPessoa,
+		arg.ID,
 		arg.Apelido,
 		arg.Nome,
 		arg.Nascimento,
 		pq.Array(arg.Stack),
+		arg.SearchIndex,
 	)
-	var i Pessoa
-	err := row.Scan(
-		&i.ID,
-		&i.Apelido,
-		&i.Nome,
-		&i.Nascimento,
-		pq.Array(&i.Stack),
-	)
-	return i, err
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
 }
 
 const getPessoa = `-- name: GetPessoa :one
-SELECT id, apelido, nome, nascimento, stack FROM pessoas WHERE id = $1
+SELECT id, apelido, nome, nascimento, stack, search_index FROM pessoas WHERE id = $1
 `
 
 func (q *Queries) GetPessoa(ctx context.Context, id uuid.UUID) (Pessoa, error) {
@@ -68,20 +66,19 @@ func (q *Queries) GetPessoa(ctx context.Context, id uuid.UUID) (Pessoa, error) {
 		&i.Nome,
 		&i.Nascimento,
 		pq.Array(&i.Stack),
+		&i.SearchIndex,
 	)
 	return i, err
 }
 
 const getPessoas = `-- name: GetPessoas :many
-SELECT id, apelido, nome, nascimento, stack FROM pessoas 
-WHERE apelido LIKE '%' || $1 || '%'
-OR nome LIKE '%' || $1 || '%'
-OR stack @> ARRAY[$1]::VARCHAR[]
+SELECT id, apelido, nome, nascimento, stack, search_index FROM pessoas
+WHERE search_index ILIKE '%' || $1 || '%'
 LIMIT 50
 `
 
-func (q *Queries) GetPessoas(ctx context.Context, t sql.NullString) ([]Pessoa, error) {
-	rows, err := q.db.QueryContext(ctx, getPessoas, t)
+func (q *Queries) GetPessoas(ctx context.Context, dollar_1 sql.NullString) ([]Pessoa, error) {
+	rows, err := q.db.QueryContext(ctx, getPessoas, dollar_1)
 	if err != nil {
 		return nil, err
 	}
@@ -95,6 +92,7 @@ func (q *Queries) GetPessoas(ctx context.Context, t sql.NullString) ([]Pessoa, e
 			&i.Nome,
 			&i.Nascimento,
 			pq.Array(&i.Stack),
+			&i.SearchIndex,
 		); err != nil {
 			return nil, err
 		}

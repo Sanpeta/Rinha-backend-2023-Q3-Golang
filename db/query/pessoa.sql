@@ -1,16 +1,14 @@
 -- name: CreatePessoa :one
-INSERT INTO pessoas (apelido, nome, nascimento, stack)
-VALUES ($1, $2, $3, $4)
-RETURNING *;
+INSERT INTO pessoas (id, apelido, nome, nascimento, stack, search_index)
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING id;
 
 -- name: GetPessoa :one
 SELECT * FROM pessoas WHERE id = $1;
 
 -- name: GetPessoas :many
-SELECT * FROM pessoas 
-WHERE apelido LIKE '%' || @t || '%'
-OR nome LIKE '%' || @t || '%'
-OR stack @> ARRAY[@t]::VARCHAR[]
+SELECT * FROM pessoas
+WHERE search_index ILIKE '%' || $1 || '%'
 LIMIT 50;
 
 -- name: CountPessoas :one

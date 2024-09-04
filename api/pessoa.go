@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"strings"
 
 	db "github.com/Sanpeta/rinha-backend-2023-q3-golang/db/sqlc"
 	"github.com/gin-gonic/gin"
@@ -31,18 +32,22 @@ func (server *Server) createPessoa(context *gin.Context) {
 		return
 	}
 
-	pessoa, err := server.store.CreatePessoa(context, db.CreatePessoaParams{
-		Nome:       request.Name,
-		Apelido:    request.Nickname,
-		Nascimento: request.Birthdate,
-		Stack:      request.Stack,
+	uuid := uuid.New()
+
+	id, err := server.store.CreatePessoa(context, db.CreatePessoaParams{
+		ID:          uuid,
+		Nome:        request.Name,
+		Apelido:     request.Nickname,
+		Nascimento:  request.Birthdate,
+		Stack:       request.Stack,
+		SearchIndex: fmt.Sprintf("%s %s %s", request.Name, request.Nickname, strings.ToLower(strings.Join(request.Stack, " "))),
 	})
 	if err != nil {
 		context.JSON(http.StatusUnprocessableEntity, gin.H{})
 		return
 	}
 
-	context.Header("Location", fmt.Sprintf("/pessoas/%s", pessoa.ID))
+	context.Header("Location", fmt.Sprintf("/pessoas/%s", id))
 	context.JSON(http.StatusCreated, gin.H{})
 }
 
